@@ -1,9 +1,15 @@
 import cv2
 import numpy as np
+from typing import *
 
+# TODO comment this
+def find_intersection(line1:Tuple[int,int,int,int], line2:Tuple[int,int,int,int])-> Tuple[int,int]:
+    """! used to find the coordinate of the intersection of two line.
 
-
-def find_intersection(line1, line2):
+    @param line1 first line (x1,y1,x2,ya).
+    @param line2 second line (3, y3, x4, y4).
+    @return the coordinates of the intersection point, else (-1,-1).
+    """
     # Unpack the endpoints of the lines
     x1, y1, x2, y2 = line1
     x3, y3, x4, y4 = line2
@@ -17,7 +23,7 @@ def find_intersection(line1, line2):
     
     # Handle the case where the lines are parallel
     if m1 == m2:
-        return None
+        return (-1,-1)
     
     # Calculate the intersection point
     if m1 == float('inf'):
@@ -30,26 +36,47 @@ def find_intersection(line1, line2):
         x_intersect = (b2 - b1) / (m1 - m2)
         y_intersect = m1 * x_intersect + b1
     
+    
     return x_intersect, y_intersect
 
 
-def getHorizontalDistance(line,image):
+def getHorizontalDistance(line:Tuple[int,int,int,int],image:np.ndarray)->int:
+    """! return the horizontal distance between the center of the image, and the intersection of the line given in input and the horizontal line.
+    The Horizontal line is the line parralel to the x axis whose y=imaheLength/2.
+
+    @param line input mine.
+    @image input image.
+    @return horizontal distance beween image center and intersection.
+
+    """
     height, width, _ = image.shape
     horizontal_line=[0,int(height/2),int(width),int(height/2)]
     intersection=find_intersection(line,horizontal_line)
     return width/2-intersection[0]
 
-def getAngle(line):
+def getAngle(line:Tuple[int,int,int,int])->int:
+    """! return the angle in degres between a given line and the the horizontal line.
+        The Horizontal line is a line parralel to the x axis.
+
+        @param line the line.
+        @return angle in degrees.
+    """
  
     x1, y1, x2, y2 = line
     tanAngle = (y2 - y1) / (x2 - x1) if x2 - x1 != 0 else float('inf')
-    # Calculate the angle each line makes with the x-axis
     angle = np.arctan(tanAngle)
     return np.degrees(angle)
     
 
 
-def getLine(image_path:str,debug:bool):
+def getLine(image_path:str,debug:bool)-> Tuple[Tuple[int, int, int, int],  np.ndarray]:
+    """!This function finds the main line in an image and return it.
+    
+    @param image_path path to the image on which we want to find a line .
+    @param debug if set to true the returned image will comport an overlay showing the line position.
+    @return  """
+
+    
     # Load image
     image = cv2.imread(image_path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -90,6 +117,8 @@ def getLine(image_path:str,debug:bool):
         cv2.line(image, (horizontal_line[0], horizontal_line[1]), (horizontal_line[2], horizontal_line[3]), (0, 0, 255), 2)
         cv2.circle(image, centerPoint, 10, (0, 0, 255 ), -1)
         # Display result
+    
+# add an overlay to visualize the line
     if(debug):
         cv2.imshow('Prolongated Line', image)
         cv2.waitKey(0)
